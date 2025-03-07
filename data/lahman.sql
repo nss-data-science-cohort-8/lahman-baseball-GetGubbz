@@ -134,14 +134,45 @@ GROUP BY playerid, namegiven, h.yearid
 HAVING SUM(H) >= 3000;
 
 -- 9. Find all players who had at least 1,000 hits for two different teams. Report those players' full names.
+SELECT *
+FROM 
 
 -- 10. Find all players who hit their career highest number of home runs in 2016. Consider only players who have played in the league for at least 10 years, and who hit at least one home run in 2016. Report the players' first and last names and the number of home runs they hit in 2016.
+WITH max_homeruns AS(
+	SELECT playerid, MAX(hr) AS max_hr
+	FROM batting
+	GROUP BY playerid
+),
+hr_2016 AS(
+	SELECT playerid, SUM(hr) AS homeruns_2016
+	FROM batting
+	WHERE yearid = 2016
+	GROUP BY playerid
+	HAVING SUM(hr) >= 1
+),
+years_played AS(
+	SELECT playerid, COUNT(DISTINCT yearid) AS tot_years_played
+	FROM batting
+	GROUP BY playerid
+	HAVING COUNT(DISTINCT yearid) >= 10
+)
+SELECT namefirst || ' ' || namelast full_name, mh.max_hr
+FROM people p
+INNER JOIN max_homeruns mh
+USING(playerid)
+INNER JOIN years_played yp
+USING(playerid)
+INNER JOIN hr_2016 h16
+USING(playerid)
+WHERE mh.max_hr = h16.homeruns_2016;
 
 -- After finishing the above questions, here are some open-ended questions to consider.
 
 -- **Open-ended questions**
 
 -- 11. Is there any correlation between number of wins and team salary? Use data from 2000 and later to answer this question. As you do this analysis, keep in mind that salaries across the whole league tend to increase together, so you may want to look on a year-by-year basis.
+SELECT *
+FROM salaries;
 
 -- 12. In this question, you will explore the connection between number of wins and attendance.
 
